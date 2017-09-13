@@ -658,20 +658,22 @@
     after_render = '';
     for (i = 0, len = operations.length; i < len; i++) {
       op = operations[i];
-      next_block = op_map[op.action](op, before_tokens, after_tokens, class_name, (function() {
-        switch (op.action) {
-          case "equal":
-            before_render += next_block;
-            return after_render += next_block;
-          case "insert":
-            return after_render += next_block;
-          case "delete":
-            return before_render += next_block;
-          case "replace":
-            before_render += next_block[0];
-            return after_render += next_block[1];
-        }
-      })());
+      next_block = op_map[op.action](op, before_tokens, after_tokens, class_name);
+      switch (op.action) {
+        case "equal":
+          before_render += next_block;
+          after_render += next_block;
+          break;
+        case "insert":
+          after_render += next_block;
+          break;
+        case "delete":
+          before_render += next_block;
+          break;
+        case "replace":
+          before_render += next_block[0];
+          after_render += next_block[1];
+      }
     }
     return return_dual_pane(before_render, after_render);
   };
