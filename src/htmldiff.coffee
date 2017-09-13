@@ -32,6 +32,10 @@ is_start_of_tag = (char)-> char is '<'
 is_whitespace = (char)-> /^\s+$/.test char
 is_tag = (token)-> /^\s*<[^>]+>\s*$/.test token
 isnt_tag = (token)-> not is_tag token
+is_script_tag = (token) -> token is '<script'
+ends_in_end_script_tag = (token) -> 
+  token_end = token.substr token.length - 9
+  token_end is '</script>'
 
 ###
  * Checks if the current word is the beginning of an atomic tag. An atomic tag is one whose
@@ -101,6 +105,9 @@ class Match
  *
  * @return {Array.<string>} The list of tokens.
 ###
+return_dual_pane = (before, after)->
+  { before: before, after: after }
+
 html_to_tokens = (html)->
   mode = 'char'
   current_word = ''
@@ -114,6 +121,23 @@ html_to_tokens = (html)->
         if atomic_tag
           mode = 'atomic_tag'
           current_atomic_tag = atomic_tag
+          current_word += char
+        else if is_end_of_tag char
+      when 'script'
+        if is_end_of_tag char
+          current_word += '>'
+          if ends_in_end_script_tag current_word
+            words.push current_word
+            current_word = ''
+            if is_whitespace char
+              mode = 'whitespace'
+            else
+              mode = 'char'
+        else
+          current_word += char
+      when 'tag'
+        if is_script_tag current_word
+          mode = 'script'
           current_word += char
         else if is_end_of_tag char
           current_word += '>'
@@ -513,24 +537,6 @@ op_map.replace = (op, before_tokens, after_tokens, class_name)->
   (op_map.delete op, before_tokens, after_tokens, class_name) +
   (op_map.insert op, before_tokens, after_tokens, class_name)
 
-###
- * Renders a list of operations into HTML content. The result is the combined version
- * of the before and after tokens with the differences wrapped in tags.
- *
- * @param {Array.<string>} before_tokens The before list of tokens.
- * @param {Array.<string>} after_tokens The after list of tokens.
- * @param {Array.<Object>} operations The list of operations to transform the before
- *      list of tokens into the after list of tokens, where each operation has the
- *      following keys:
- *      - {string} action One of {'replace', 'insert', 'delete', 'equal'}.
- *      - {number} start_in_before The beginning of the range in the list of before tokens.
- *      - {number} end_in_before The end of the range in the list of before tokens.
- *      - {number} start_in_after The beginning of the range in the list of after tokens.
- *      - {number} end_in_after The end of the range in the list of after tokens.
- * @param {string} class_name (Optional) The class name to include in the wrapper tag.
- *
- * @return {string} The rendering of the list of operations.
-###
 render_operations = (before_tokens, after_tokens, operations, class_name)->
   rendering = ''
   for op in operations
@@ -538,17 +544,35 @@ render_operations = (before_tokens, after_tokens, operations, class_name)->
 
   return rendering
 
-###
- * Compares two pieces of HTML content and returns the combined content with differences
- * wrapped in <ins> and <del> tags.
- *
- * @param {string} before The HTML content before the changes.
- * @param {string} after The HTML content after the changes.
- * @param {string} class_name (Optional) The class attribute to include in <ins> and <del> tags.
- *
- * @return {string} The combined HTML content with differences wrapped in <ins> and <del> tags.
-###
-diff = (before, after, class_name)->
+
+render_operations_dual_pane = (before_tokens, after_tokens, operations)->
+  before_render = ''
+  after_render = ''
+  for op in operations
+    next_block = op_map[op.action] op, before_tokens, after_tokens
+    switch op.action
+      when "equal"
+        before_render += next_block
+        after_render += next_block
+      when "insert" then after_render += next_block
+      when "delete" then before_render += next_block
+      when "replace"
+        before_render += next_block[0]
+        after_render += next_block[1]
+
+  return_dual_pane(before_render, after_render)
+
+diff_dual_pane = (before, after ) ->
+  return return_dual_pane(before, after) if before is after
+
+  before = html_to_tokens before
+  after = html_to_tokens after
+
+  ops = calculate_operations before, after
+
+  render_operations_dual_pane before, after, ops
+
+diff = (before, after)->
   return before if before is after
 
   before = html_to_tokens before
@@ -565,6 +589,8 @@ find_matching_blocks.create_index = create_index
 find_matching_blocks.get_key_for_token = get_key_for_token
 diff.calculate_operations = calculate_operations
 diff.render_operations = render_operations
+diff.render_operations_dual_pane = render_operations_dual_pane
+diff.diff_dual_pane = diff_dual_pane
 
 if typeof define is 'function'
   define [], ()-> diff
