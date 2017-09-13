@@ -29,7 +29,6 @@ describe 'html_to_tokens', ->
     (expect @cut '<p>hello</br>goodbye</p>')
     .eql ['<p>', 'hello', '</br>', 'goodbye', '</p>']
 
-<<<<<<< HEAD
   describe 'when encountering atomic tags', ->
     it 'should identify an image tag as a single token', ->
       (expect @cut '<p><img src="1.jpg"><img src="2.jpg"></p>')
@@ -70,8 +69,6 @@ describe 'html_to_tokens', ->
     it 'should identify a script tag as a single token', ->
       (expect @cut '<p><script>console.log("hi");</script></p>')
       .eql ['<p>', '<script>console.log("hi");</script>', '</p>']
-=======
   it 'should identify scripts as single tokens', ->
     (expect @cut '<script>int bob = 0;</script>')
     .eql ['<script>int bob = 0;</script>']
->>>>>>> 3b31536e3f48ba62f64db99270794da49c10902d

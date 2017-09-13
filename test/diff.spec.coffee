@@ -14,7 +14,6 @@ describe 'Diff', ->
       @res = @cut 'input', 'input 2'
 
     it 'should mark the new letter', ->
-<<<<<<< HEAD
       (expect @res).to.equal 'input<ins> 2</ins>'
 
   describe 'Whitespace differences', ->
@@ -31,7 +30,6 @@ describe 'Diff', ->
     it 'should include the class in the wrapper tags', ->
       (expect @cut 'input', 'input 2', 'diff-result').to.equal \
         'input<ins class="diff-result"> 2</ins>'
-=======
       (expect @res).to.equal 'input <ins>2</ins>'
 
   describe 'When dual pane is checked', ->
@@ -47,4 +45,3 @@ describe 'Diff', ->
 
     it 'should should return the text', ->
       (expect @res).eql { before: 'input <del>text</del>', after: 'input <ins>texts</ins>' }
->>>>>>> 3b31536e3f48ba62f64db99270794da49c10902d
