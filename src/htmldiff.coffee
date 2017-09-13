@@ -544,7 +544,7 @@ render_operations_dual_pane = (before_tokens, after_tokens, operations, class_na
   before_render = ''
   after_render = ''
   for op in operations
-    next_block = op_map[op.action] op, before_tokens, after_tokens, class_name,
+    next_block = op_map[op.action] op, before_tokens, after_tokens, class_name
     switch op.action
       when "equal"
         before_render += next_block
