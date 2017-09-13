@@ -123,6 +123,15 @@ html_to_tokens = (html)->
           current_atomic_tag = atomic_tag
           current_word += char
         else if is_end_of_tag char
+          current_word += '>'
+          words.push current_word
+          current_word = ''
+          if is_whitespace char
+            mode = 'whitespace'
+          else
+            mode = 'char'
+        else
+          current_word += char
       when 'script'
         if is_end_of_tag char
           current_word += '>'
@@ -133,20 +142,6 @@ html_to_tokens = (html)->
               mode = 'whitespace'
             else
               mode = 'char'
-        else
-          current_word += char
-      when 'tag'
-        if is_script_tag current_word
-          mode = 'script'
-          current_word += char
-        else if is_end_of_tag char
-          current_word += '>'
-          words.push current_word
-          current_word = ''
-          if is_whitespace char
-            mode = 'whitespace'
-          else
-            mode = 'char'
         else
           current_word += char
       when 'atomic_tag'
