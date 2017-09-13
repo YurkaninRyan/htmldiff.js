@@ -540,11 +540,11 @@ render_operations = (before_tokens, after_tokens, operations, class_name)->
   return rendering
 
 
-render_operations_dual_pane = (before_tokens, after_tokens, operations)->
+render_operations_dual_pane = (before_tokens, after_tokens, operations, class_name)->
   before_render = ''
   after_render = ''
   for op in operations
-    next_block = op_map[op.action] op, before_tokens, after_tokens
+    next_block = op_map[op.action] op, before_tokens, after_tokens, class_name,
     switch op.action
       when "equal"
         before_render += next_block
@@ -557,7 +557,7 @@ render_operations_dual_pane = (before_tokens, after_tokens, operations)->
 
   return_dual_pane(before_render, after_render)
 
-diff_dual_pane = (before, after ) ->
+diff_dual_pane = (before, after, class_name ) ->
   return return_dual_pane(before, after) if before is after
 
   before = html_to_tokens before
@@ -565,9 +565,9 @@ diff_dual_pane = (before, after ) ->
 
   ops = calculate_operations before, after
 
-  render_operations_dual_pane before, after, ops
+  render_operations_dual_pane before, after, ops, class_name
 
-diff = (before, after)->
+diff = (before, after, class_name) ->
   return before if before is after
 
   before = html_to_tokens before
